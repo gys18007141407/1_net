@@ -165,7 +165,7 @@ int main(){
 1、需要定义外部全局日志等级变量 g_logLevel
 2、可以设置 log 的输出方式， 默认为输出到标准输出 stdout。
    使用函数 Logging::setOutFunc(outFunc)来重定向， 其中type(OutFunc) = void(\*)(const char\* _data, std::size_t _len)
-
+```cpp
 一些输出信息：
 [TRACE] => function name = "Epoll" Aug  4 15:48:54 2021 create epollfd 3 by thread 140418005440832[Epoll.cpp:24]
 [INFO] => New eventLoop constructed by thread_id=[140418005440832][EventLoop.cpp:51]
@@ -218,3 +218,4 @@ int main(){
 [TRACE] => function name = "wait" Aug  4 15:49:05 2021 fd = 9 triggered 1 event by epollfd 7[Epoll.cpp:40]
 [TRACE] => function name = "wait" Aug  4 15:49:07 2021 fd = 14 triggered 1 event by epollfd 7[Epoll.cpp:40]
 [INFO] => Aug  4 15:49:07 2021 fd=[14] EPOLLIN but disconnect, remove the fd![TcpConn.cpp:64]
+```
