@@ -160,6 +160,34 @@ int main(){
 
 }
 
+// 异步
+int main(){
+    TcpClient::SptrTcpClient client;
+
+    // 坑点: 如果忽略返回值，则会阻塞！！！因为async的返回值是一个future对象，在析构时要等待异步任务执行结束
+    auto _ = std::async(std::launch::async, 
+        [&client](){
+            EventLoop loop;
+            client.reset(new TcpClient(&loop));
+
+            client->setOnConnectCallBack(OnConnect);
+            client->setOnMessageCallBack(OnMessage);
+            client->connect();     // 先设置回调，后建立连接
+
+            loop.loop();
+        }
+    );
+   
+    while(!client.get() || !client->is_connected()); // 等待连接
+
+    std::string msg;
+    while(std::getline(std::cin, msg), msg != "quit"){
+        if(msg.size() == 0) continue;
+        client->send(msg);
+    }
+    return 0;
+}
+
 ```
 
 ---
@@ -169,8 +197,9 @@ int main(){
 1、需要定义外部全局日志等级变量 g_logLevel
 2、可以设置 log 的输出方式， 默认为输出到标准输出 stdout。
    使用函数 Logging::setOutFunc(outFunc)来重定向， 其中type(OutFunc) = void(\*)(const char\* _data, std::size_t _len)
-```cpp
+
 一些输出信息：
+```cpp
 [TRACE] => function name = "Epoll" Aug  4 15:48:54 2021 create epollfd 3 by thread 140418005440832[Epoll.cpp:24]
 [INFO] => New eventLoop constructed by thread_id=[140418005440832][EventLoop.cpp:51]
 [INFO] => Aug  4 15:48:54 2021 thread=[140418005440832] create a io EventLoop[EventLoopThreadPool.cpp:70]
@@ -223,4 +252,3 @@ int main(){
 [TRACE] => function name = "wait" Aug  4 15:49:07 2021 fd = 14 triggered 1 event by epollfd 7[Epoll.cpp:40]
 [INFO] => Aug  4 15:49:07 2021 fd=[14] EPOLLIN but disconnect, remove the fd![TcpConn.cpp:64]
 ```
-
